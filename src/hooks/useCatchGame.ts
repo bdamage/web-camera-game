@@ -148,7 +148,7 @@ export const useCatchGame = ({
         particles: [...particlesRef.current],
       });
 
-      if (remainingMs <= 0 || missesRef.current >= MAX_LIVES) {
+      if (missesRef.current >= MAX_LIVES) {
         statusRef.current = "over";
         setStatus("over");
         stopLoop();
@@ -177,13 +177,38 @@ export const useCatchGame = ({
   );
 
   const setupNextProblem = useCallback(() => {
+    const getOptionCountForProgress = (solvedCount: number) => {
+      if (solvedCount < 8) {
+        return 2;
+      }
+
+      if (solvedCount < 20) {
+        return 3;
+      }
+
+      if (solvedCount < 40) {
+        return 4;
+      }
+
+      if (solvedCount < 60) {
+        return 5;
+      }
+
+      if (solvedCount < 80) {
+        return 6;
+      }
+
+      return 7;
+    };
+
+    const optionCount = getOptionCountForProgress(solvedProblemsRef.current);
     const nextProblem = createMathProblem(
       settings.levelId,
       settings.operators,
       solvedProblemsRef.current,
     );
     activeProblemRef.current = nextProblem;
-    answerChoicesRef.current = createAnswerChoices(nextProblem.answer, 6);
+    answerChoicesRef.current = createAnswerChoices(nextProblem.answer, optionCount);
   }, [settings.levelId, settings.operators]);
 
   const spawnAnswerBalloon = useCallback(
@@ -261,6 +286,30 @@ export const useCatchGame = ({
 
   const animate = useCallback(
     (now: number) => {
+      const getOptionCountForProgress = (solvedCount: number) => {
+        if (solvedCount < 8) {
+          return 2;
+        }
+
+        if (solvedCount < 20) {
+          return 3;
+        }
+
+        if (solvedCount < 40) {
+          return 4;
+        }
+
+        if (solvedCount < 60) {
+          return 5;
+        }
+
+        if (solvedCount < 80) {
+          return 6;
+        }
+
+        return 7;
+      };
+
       if (previousTimeRef.current === 0) {
         previousTimeRef.current = now;
       }
@@ -379,13 +428,16 @@ export const useCatchGame = ({
         setupNextProblem();
         objectsRef.current = [];
         spawnAnswerBalloon(elapsedSeconds, true);
-        spawnAnswerBalloon(elapsedSeconds);
-        spawnAnswerBalloon(elapsedSeconds);
+        const optionCount = getOptionCountForProgress(solvedProblemsRef.current);
+        while (objectsRef.current.length < optionCount) {
+          spawnAnswerBalloon(elapsedSeconds);
+        }
       } else {
         objectsRef.current = nextObjects;
       }
 
-      while (objectsRef.current.length < 4 && activeProblemRef.current) {
+      const optionCount = getOptionCountForProgress(solvedProblemsRef.current);
+      while (objectsRef.current.length < optionCount && activeProblemRef.current) {
         spawnAnswerBalloon(elapsedSeconds);
       }
 
