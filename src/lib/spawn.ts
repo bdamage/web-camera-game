@@ -10,7 +10,7 @@ import type {FallingObject} from "../types/game";
 
 let objectId = 0;
 
-const FALL_SPEED_SCALE = 0.55;
+const FALL_SPEED_SCALE = 0.385;
 
 const MAX_SPAWN_POSITION_ATTEMPTS = 14;
 
@@ -44,14 +44,14 @@ const pickSpawnX = (size: number, existingObjects: FallingObject[]) => {
 };
 
 const getSpeedMultiplier = (elapsedSeconds: number) => {
-  const introPhaseSeconds = 14;
+  const introPhaseSeconds = 20;
   if (elapsedSeconds <= introPhaseSeconds) {
     const introProgress = elapsedSeconds / introPhaseSeconds;
-    return 0.68 + introProgress * 0.22;
+    return 0.62 + introProgress * 0.14;
   }
 
-  const rampProgress = (elapsedSeconds - introPhaseSeconds) / 50;
-  return Math.min(1.85, 0.9 + rampProgress * 0.95);
+  const rampProgress = (elapsedSeconds - introPhaseSeconds) / 90;
+  return Math.min(1.2, 0.76 + rampProgress * 0.44);
 };
 
 interface CreateFallingObjectOptions {

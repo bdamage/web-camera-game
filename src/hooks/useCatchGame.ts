@@ -1,7 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {collidesWithAnyHand} from "../lib/collision";
 import {
-  CATCHER_Y,
   GAME_DURATION_MS,
   GOLDEN_TOKEN_POINTS,
   GOLDEN_TOKEN_SPAWN_CHANCE,
@@ -335,7 +334,7 @@ export const useCatchGame = ({
               particlesRef.current.push({
                 id: ++particleId,
                 x: nextObject.x,
-                y: CATCHER_Y,
+                y: nextObject.y,
                 vx: (Math.random() - 0.5) * 0.8,
                 vy: -Math.random() * 0.9,
                 life: 0,
