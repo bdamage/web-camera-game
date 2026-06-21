@@ -203,7 +203,13 @@ export const useCatchGame = ({
         }
       }
     },
-    [bestTrophyId, highScore, highScoreScopeKey, settings.infiniteLives, stopLoop],
+    [
+      bestTrophyId,
+      highScore,
+      highScoreScopeKey,
+      settings.infiniteLives,
+      stopLoop,
+    ],
   );
 
   const setupNextProblem = useCallback(() => {
@@ -230,7 +236,9 @@ export const useCatchGame = ({
       const answerCount = objectsRef.current.filter(
         (object) => object.kind === "answer",
       ).length;
-      const targetAnswerCount = getTargetAnswerBalloonCount(solvedProblemsRef.current);
+      const targetAnswerCount = getTargetAnswerBalloonCount(
+        solvedProblemsRef.current,
+      );
       if (!forceCorrect && answerCount >= targetAnswerCount) {
         return;
       }
@@ -429,8 +437,8 @@ export const useCatchGame = ({
           solvedProblemsRef.current,
         );
         while (
-          objectsRef.current.filter((object) => object.kind === "answer").length <
-          optionCount
+          objectsRef.current.filter((object) => object.kind === "answer")
+            .length < optionCount
         ) {
           spawnAnswerBalloon(elapsedSeconds);
         }
@@ -438,7 +446,9 @@ export const useCatchGame = ({
         objectsRef.current = nextObjects;
       }
 
-      const optionCount = getTargetAnswerBalloonCount(solvedProblemsRef.current);
+      const optionCount = getTargetAnswerBalloonCount(
+        solvedProblemsRef.current,
+      );
       while (
         objectsRef.current.filter((object) => object.kind === "answer").length <
           optionCount &&
