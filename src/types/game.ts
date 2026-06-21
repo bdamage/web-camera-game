@@ -39,6 +39,7 @@ export interface MathProblem {
 export interface GameSettings {
   levelId: string;
   operators: MathOperator[];
+  infiniteLives: boolean;
 }
 
 export interface FallingObject {

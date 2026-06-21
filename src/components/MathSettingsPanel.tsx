@@ -4,9 +4,11 @@ import type {MathOperator} from '../types/game'
 interface MathSettingsPanelProps {
   levelId: string
   selectedOperators: MathOperator[]
+  infiniteLives: boolean
   disabled: boolean
   onLevelChange: (levelId: string) => void
   onToggleOperator: (operator: MathOperator) => void
+  onToggleInfiniteLives: () => void
   onSelectAllOperators: () => void
 }
 
@@ -20,9 +22,11 @@ const OPERATORS: Array<{value: MathOperator; label: string}> = [
 export function MathSettingsPanel({
   levelId,
   selectedOperators,
+  infiniteLives,
   disabled,
   onLevelChange,
   onToggleOperator,
+  onToggleInfiniteLives,
   onSelectAllOperators,
 }: MathSettingsPanelProps) {
   const selectedCount = selectedOperators.length
@@ -45,6 +49,22 @@ export function MathSettingsPanel({
       </div>
 
       <div className="mt-4 grid gap-3">
+        <label className="flex items-center justify-between rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700">
+          Infinite Lives
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={onToggleInfiniteLives}
+            className={`rounded-md px-2.5 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+              infiniteLives
+                ? 'bg-emerald-100 text-emerald-800'
+                : 'bg-slate-100 text-slate-700'
+            }`}
+          >
+            {infiniteLives ? 'On' : 'Off'}
+          </button>
+        </label>
+
         <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
           Age Difficulty Level
           <select

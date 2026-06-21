@@ -62,6 +62,34 @@ const createInitialSnapshot = (): GameSnapshot => ({
 });
 
 let particleId = 0;
+const MAX_VISIBLE_ANSWER_BALLOONS = 5;
+
+const getOptionCountForProgress = (solvedCount: number) => {
+  if (solvedCount < 8) {
+    return 2;
+  }
+
+  if (solvedCount < 20) {
+    return 3;
+  }
+
+  if (solvedCount < 40) {
+    return 4;
+  }
+
+  if (solvedCount < 60) {
+    return 5;
+  }
+
+  if (solvedCount < 80) {
+    return 6;
+  }
+
+  return 7;
+};
+
+const getTargetAnswerBalloonCount = (solvedCount: number) =>
+  Math.min(MAX_VISIBLE_ANSWER_BALLOONS, getOptionCountForProgress(solvedCount));
 
 export const useCatchGame = ({
   controlX,
@@ -131,7 +159,9 @@ export const useCatchGame = ({
       setSnapshot({
         score: scoreRef.current,
         misses: missesRef.current,
-        lives: Math.max(0, MAX_LIVES - missesRef.current),
+        lives: settings.infiniteLives
+          ? MAX_LIVES
+          : Math.max(0, MAX_LIVES - missesRef.current),
         streak: streakRef.current,
         remainingMs,
         catcherX: latestControlXRef.current,
@@ -148,7 +178,7 @@ export const useCatchGame = ({
         particles: [...particlesRef.current],
       });
 
-      if (missesRef.current >= MAX_LIVES) {
+      if (!settings.infiniteLives && missesRef.current >= MAX_LIVES) {
         statusRef.current = "over";
         setStatus("over");
         stopLoop();
@@ -173,34 +203,10 @@ export const useCatchGame = ({
         }
       }
     },
-    [bestTrophyId, highScore, highScoreScopeKey, stopLoop],
+    [bestTrophyId, highScore, highScoreScopeKey, settings.infiniteLives, stopLoop],
   );
 
   const setupNextProblem = useCallback(() => {
-    const getOptionCountForProgress = (solvedCount: number) => {
-      if (solvedCount < 8) {
-        return 2;
-      }
-
-      if (solvedCount < 20) {
-        return 3;
-      }
-
-      if (solvedCount < 40) {
-        return 4;
-      }
-
-      if (solvedCount < 60) {
-        return 5;
-      }
-
-      if (solvedCount < 80) {
-        return 6;
-      }
-
-      return 7;
-    };
-
     const optionCount = getOptionCountForProgress(solvedProblemsRef.current);
     const nextProblem = createMathProblem(
       settings.levelId,
@@ -208,13 +214,24 @@ export const useCatchGame = ({
       solvedProblemsRef.current,
     );
     activeProblemRef.current = nextProblem;
-    answerChoicesRef.current = createAnswerChoices(nextProblem.answer, optionCount);
+    answerChoicesRef.current = createAnswerChoices(
+      nextProblem.answer,
+      optionCount,
+    );
   }, [settings.levelId, settings.operators]);
 
   const spawnAnswerBalloon = useCallback(
     (elapsedSeconds: number, forceCorrect = false) => {
       const activeProblem = activeProblemRef.current;
       if (!activeProblem) {
+        return;
+      }
+
+      const answerCount = objectsRef.current.filter(
+        (object) => object.kind === "answer",
+      ).length;
+      const targetAnswerCount = getTargetAnswerBalloonCount(solvedProblemsRef.current);
+      if (!forceCorrect && answerCount >= targetAnswerCount) {
         return;
       }
 
@@ -286,30 +303,6 @@ export const useCatchGame = ({
 
   const animate = useCallback(
     (now: number) => {
-      const getOptionCountForProgress = (solvedCount: number) => {
-        if (solvedCount < 8) {
-          return 2;
-        }
-
-        if (solvedCount < 20) {
-          return 3;
-        }
-
-        if (solvedCount < 40) {
-          return 4;
-        }
-
-        if (solvedCount < 60) {
-          return 5;
-        }
-
-        if (solvedCount < 80) {
-          return 6;
-        }
-
-        return 7;
-      };
-
       if (previousTimeRef.current === 0) {
         previousTimeRef.current = now;
       }
@@ -397,7 +390,9 @@ export const useCatchGame = ({
               soundRef.current.play("catch");
             }
           } else {
-            missesRef.current += 1;
+            if (!settings.infiniteLives) {
+              missesRef.current += 1;
+            }
             streakRef.current = 0;
 
             if (soundEnabled) {
@@ -413,7 +408,9 @@ export const useCatchGame = ({
             continue;
           }
 
-          missesRef.current += 1;
+          if (!settings.infiniteLives) {
+            missesRef.current += 1;
+          }
           streakRef.current = 0;
           if (soundEnabled) {
             soundRef.current.play("miss");
@@ -428,16 +425,25 @@ export const useCatchGame = ({
         setupNextProblem();
         objectsRef.current = [];
         spawnAnswerBalloon(elapsedSeconds, true);
-        const optionCount = getOptionCountForProgress(solvedProblemsRef.current);
-        while (objectsRef.current.length < optionCount) {
+        const optionCount = getTargetAnswerBalloonCount(
+          solvedProblemsRef.current,
+        );
+        while (
+          objectsRef.current.filter((object) => object.kind === "answer").length <
+          optionCount
+        ) {
           spawnAnswerBalloon(elapsedSeconds);
         }
       } else {
         objectsRef.current = nextObjects;
       }
 
-      const optionCount = getOptionCountForProgress(solvedProblemsRef.current);
-      while (objectsRef.current.length < optionCount && activeProblemRef.current) {
+      const optionCount = getTargetAnswerBalloonCount(solvedProblemsRef.current);
+      while (
+        objectsRef.current.filter((object) => object.kind === "answer").length <
+          optionCount &&
+        activeProblemRef.current
+      ) {
         spawnAnswerBalloon(elapsedSeconds);
       }
 
@@ -459,6 +465,7 @@ export const useCatchGame = ({
     },
     [
       setupNextProblem,
+      settings.infiniteLives,
       soundEnabled,
       spawnAnswerBalloon,
       spawnGoldenToken,

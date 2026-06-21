@@ -2,7 +2,7 @@ interface HudProps {
   score: number
   highScore: number
   streak: number
-  lives: number
+  lives: number | string
   remainingMs: number
   bonusTokensCaught: number
   trophyTitle: string

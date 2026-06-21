@@ -22,6 +22,7 @@ function App() {
 
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [debugEnabled, setDebugEnabled] = useState(false)
+  const [infiniteLives, setInfiniteLives] = useState(true)
   const [selectedLevelId, setSelectedLevelId] = useState(DIFFICULTY_LEVELS[0].id)
   const [selectedOperators, setSelectedOperators] = useState<MathOperator[]>(ALL_OPERATORS)
   const [calibrationCenter, setCalibrationCenter] = useState(0.5)
@@ -59,6 +60,7 @@ function App() {
     settings: {
       levelId: selectedLevelId,
       operators: selectedOperators,
+      infiniteLives,
     },
   })
 
@@ -194,7 +196,7 @@ function App() {
             score={game.snapshot.score}
             highScore={game.highScore}
             streak={game.snapshot.streak}
-            lives={game.snapshot.lives}
+            lives={infiniteLives ? '∞' : game.snapshot.lives}
             remainingMs={game.snapshot.remainingMs}
             bonusTokensCaught={game.snapshot.bonusTokensCaught}
             trophyTitle={currentTrophy.title}
@@ -216,9 +218,15 @@ function App() {
           <MathSettingsPanel
             levelId={selectedLevelId}
             selectedOperators={selectedOperators}
+            infiniteLives={infiniteLives}
             disabled={isSettingsLocked}
             onLevelChange={setSelectedLevelId}
             onToggleOperator={toggleOperator}
+            onToggleInfiniteLives={() => {
+              if (!isSettingsLocked) {
+                setInfiniteLives((prev) => !prev)
+              }
+            }}
             onSelectAllOperators={() => {
               if (!isSettingsLocked) {
                 setSelectedOperators(ALL_OPERATORS)

@@ -4,7 +4,7 @@ export const MAX_LIVES = 10;
 export const CATCHER_Y = 0.9;
 export const CATCHER_WIDTH = 0.15;
 
-export const BASE_OBJECT_SIZE = 0.05;
+export const BASE_OBJECT_SIZE = 0.07;
 export const MIN_SPAWN_INTERVAL = 0.28;
 export const BASE_SPAWN_INTERVAL = 1.1;
 
